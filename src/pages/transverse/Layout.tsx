@@ -68,7 +68,7 @@ const Layout: React.FC = () => {
         }
         
         if (foundMenuItem === null) {
-          toast.error(t('Security_AccessDenied'));
+          toast.error(t('Security_AccessDenied',{path: currentPath}) );
           navigate('/dashboard');
         }
       } catch (error) {

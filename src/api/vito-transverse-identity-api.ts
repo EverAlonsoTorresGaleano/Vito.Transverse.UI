@@ -7181,6 +7181,7 @@ export interface MenuGroupDTO {
     description?: string;
     positionIndex?: number | undefined;
     items?: MenuItemDTO[];
+    isVisible?: boolean;
 }
 
 export interface MenuItemDTO {
@@ -7195,6 +7196,8 @@ export interface MenuItemDTO {
     canEdit?: boolean;
     canDelete?: boolean;
     items?: MenuComponentDTO[];
+    isVisible?: boolean;
+    isApi?: boolean;
 }
 
 export interface MenuComponentDTO {

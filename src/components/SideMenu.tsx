@@ -340,7 +340,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, onToggle }) => {
           {/* Dynamic Menu Items */}
           <Divider />
           {menuGroups.map((group) => (
-            <React.Fragment key={group.id}>
+            group.isVisible && <React.Fragment key={group.id}>
               <ListItem disablePadding>
                 <ListItemButton
                   onClick={() => group.id && handleGroupClick(group.id)}
@@ -384,7 +384,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, onToggle }) => {
               {open && group.items && (
                 <Collapse in={expandedGroups.has(group.id || '')} timeout="auto" unmountOnExit>
                   <List disablePadding>
-                    {group.items.map((item: MenuItemDTO) => (
+                    {group.items.filter((item: MenuItemDTO) => item.isVisible).map((item: MenuItemDTO) => (
                       <ListItem key={item.id} disablePadding>
                         <ListItemButton
                           selected={location.pathname === item.path}
@@ -432,11 +432,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, onToggle }) => {
         anchorEl={popoverAnchor?.element}
         onClose={() => setPopoverAnchor(null)}
         anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
+          vertical: 'center',
+          horizontal: 'right',
         }}
         transformOrigin={{
-          vertical: 'top',
+          vertical: 'center',
           horizontal: 'left',
         }}
         disableRestoreFocus
@@ -450,7 +450,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, onToggle }) => {
           sx: {
             pointerEvents: 'auto',
             mt: 1,
-            ml: 1,
+            mr: 1,
             boxShadow: 3,
           },
         }}
