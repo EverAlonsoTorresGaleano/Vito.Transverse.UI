@@ -114,7 +114,7 @@ const LoginPage: React.FC = () => {
       if (response.access_token) {
         setToken(response.access_token);
         setCulture(data.cultureId);
-        toast.success(t('Login_Success'));
+        toast.success(t('Security_LoginSuccess'));
         navigate('/dashboard');
       } else {
         toast.error(t('Login_Error'));
@@ -301,7 +301,7 @@ const LoginPage: React.FC = () => {
                 startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 title={t('Button_Login_Tooltip')}
               >
-                {loading ? t('Button_Login_Loading') : t('Button_Login')}
+                {loading ? t('Button_LoggingIn') : t('Button_Login')}
               </Button>
             </Box>
           </form>

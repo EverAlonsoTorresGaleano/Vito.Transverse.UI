@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Box,
@@ -10,7 +10,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  Button,
   Tooltip,
 } from '@mui/material';
 import { Logout as LogoutIcon } from '@mui/icons-material';
@@ -18,23 +17,23 @@ import { toast } from 'react-toastify';
 import SideMenu from '../../components/SideMenu';
 import { removeToken } from '../../utils/auth';
 import { setCulture, getCulture } from '../../utils/culture';
-import { createApiClient } from '../../api/client';
+import { createAuthenticatedApiClient } from '../../api/client';
 import { env } from '../../config/env';
 import { changeLanguage } from '../../i18n/config';
-import type { ListItemDTO } from '../../api/vito-transverse-identity-api';
+import type { ListItemDTO, MenuItemDTO } from '../../api/vito-transverse-identity-api';
 
 const Layout: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
   const [cultures, setCultures] = useState<ListItemDTO[]>([]);
   const [selectedCulture, setSelectedCulture] = useState<string>(getCulture());
-  const autoLogoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoLogoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const loadCultures = async () => {
       try {
-        const { createAuthenticatedApiClient } = await import('../../api/client');
         const client = createAuthenticatedApiClient();
         const culturesData = await client.getApiMasterV1CulturesActiveDropDown();
         setCultures(culturesData);
@@ -46,6 +45,42 @@ const Layout: React.FC = () => {
     loadCultures();
   }, []);
 
+  // Verify page authorization
+  useEffect(() => {
+    const VerifyPageAuthorization = async () => {
+      try {
+        const client = createAuthenticatedApiClient();
+        const menuGroups = await client.getApiUsersV1Menu();
+        
+        const currentPath = location.pathname;
+        let foundMenuItem: MenuItemDTO | null = null;
+        
+        for (const group of menuGroups) {
+          if (group.items) {
+            const item = group.items.find(
+              (item) => item.path === currentPath || '/' + item.path === currentPath
+            );
+            if (item) {
+              foundMenuItem = item;
+              break;
+            }
+          }
+        }
+        
+        if (foundMenuItem === null) {
+          toast.error(t('Security_AccessDenied'));
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('Error loading menu data:', error);
+        toast.error(t('Error_LoadingMenu') || 'Error loading menu data');
+        navigate('/dashboard');
+      }
+    };
+
+    VerifyPageAuthorization();
+  }, [location.pathname, t, navigate]);
+
   useEffect(() => {
     const resetAutoLogout = () => {
       if (autoLogoutTimerRef.current) {
@@ -55,7 +90,7 @@ const Layout: React.FC = () => {
       const autoLogoutTime = env.AUTO_LOGOFF_TIME * 60 * 1000; // Convert minutes to milliseconds
       autoLogoutTimerRef.current = setTimeout(() => {
         handleLogout();
-        toast.info(t('AutoLogout_Message'));
+        toast.info(t('Security_AutoLogout'));
       }, autoLogoutTime);
     };
 

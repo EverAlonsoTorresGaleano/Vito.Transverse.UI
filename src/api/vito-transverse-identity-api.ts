@@ -7179,6 +7179,7 @@ export interface MenuGroupDTO {
     title?: string;
     icon?: string;
     description?: string;
+    positionIndex?: number | undefined;
     items?: MenuItemDTO[];
 }
 
@@ -7188,6 +7189,23 @@ export interface MenuItemDTO {
     icon?: string;
     description?: string;
     path?: string;
+    positionIndex?: number | undefined;
+    canCreate?: boolean;
+    canView?: boolean;
+    canEdit?: boolean;
+    canDelete?: boolean;
+    items?: MenuComponentDTO[];
+}
+
+export interface MenuComponentDTO {
+    id?: string;
+    title?: string;
+    description?: string;
+    objectId?: string;
+    objectName?: string;
+    propertyName?: string;
+    defaultPropertyValue?: string;
+    rolePropertyValue?: string;
 }
 
 export interface UserRoleDTO {
