@@ -15,6 +15,7 @@ import {
   InputLabel,
   CircularProgress,
   Container,
+  Tooltip,
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { createApiClient } from '../../api/client';
@@ -23,6 +24,7 @@ import { setCulture, getCulture } from '../../utils/culture';
 import { env } from '../../config/env';
 import { changeLanguage } from '../../i18n/config';
 import type { ListItemDTO, TokenRequestDTO } from '../../api/vito-transverse-identity-api';
+import { Login } from '@mui/icons-material';
 
 interface LoginFormData {
   userName: string;
@@ -292,17 +294,19 @@ const LoginPage: React.FC = () => {
             />
 
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+             <Tooltip title={t('Button_Login_Tooltip')} >
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 size="large"
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Login />}
                 title={t('Button_Login_Tooltip')}
               >
                 {loading ? t('Button_LoggingIn') : t('Button_Login')}
               </Button>
+              </Tooltip>
             </Box>
           </form>
         </CardContent>
