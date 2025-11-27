@@ -163,6 +163,13 @@ const CompaniesListPage: React.FC = () => {
 
   const columns: GridColDef<CompanyDTO>[] = [
     {
+      field: 'id',
+      headerName: t('Label_Id') || 'Id',
+      width: 100,
+      sortable: true,
+      resizable: true,
+    },
+    {
       field: 'nameTranslationKey',
       headerName: t('Label_Name'),
       flex: 1,
