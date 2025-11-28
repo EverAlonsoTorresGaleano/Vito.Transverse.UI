@@ -7,11 +7,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { theme } from './theme/theme';
 import LoginPage from './pages/transverse/LoginPage';
 import Layout from './pages/transverse/Layout';
-import Dashboard from './pages/transverse/Dashboard';
-import CompaniesListPage from './pages/Companies/CompaniesListPage';
-import Loading from './components/Loading';
+import Loading from './components/Loading'; import { RouteConfig } from './config/routes.tsx';
 import { isAuthenticated } from './utils/auth';
 import initI18n from './i18n/config';
+import { appRoutes } from './config/routes.tsx';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
@@ -57,8 +56,9 @@ const App: React.FC = () => {
               </PrivateRoute>
             }
           >
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="companies" element={<CompaniesListPage />} />
+            {appRoutes.map((route: RouteConfig) => (
+              <Route key={route.path} path={route.path} element={route.element} />
+            ))}
             <Route index element={<Navigate to="/dashboard" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

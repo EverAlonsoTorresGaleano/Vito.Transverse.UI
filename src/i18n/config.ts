@@ -2,7 +2,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { env } from '../config/env';
-import { getCulture } from '../utils/culture';
+import { getCultureId } from '../utils/culture';
 import { createApiClient } from '../api/client';
 import type { CultureTranslationDTO } from '../api/vito-transverse-identity-api';
 
@@ -30,7 +30,7 @@ const loadTranslations = async (cultureId: string): Promise<Record<string, strin
 };
 
 const initI18n = async () => {
-  const culture = getCulture();
+  const culture = getCultureId();
   const translations = await loadTranslations(culture);
 
   await i18n

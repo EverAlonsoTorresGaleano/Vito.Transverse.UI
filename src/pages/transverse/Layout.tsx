@@ -16,19 +16,19 @@ import { Logout as LogoutIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import SideMenu from '../../components/SideMenu';
 import { removeToken } from '../../utils/auth';
-import { setCulture, getCulture } from '../../utils/culture';
+import { setCulture, getCultureId } from '../../utils/culture';
 import { createAuthenticatedApiClient } from '../../api/client';
 import { env } from '../../config/env';
 import { changeLanguage } from '../../i18n/config';
-import type { ListItemDTO, MenuItemDTO } from '../../api/vito-transverse-identity-api';
-
+import type { ListItemDTO } from '../../api/vito-transverse-identity-api';
+import { appRoutes } from '../../config/routes.tsx';
 const Layout: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(true);
   const [cultures, setCultures] = useState<ListItemDTO[]>([]);
-  const [selectedCulture, setSelectedCulture] = useState<string>(getCulture());
+  const [selectedCulture, setSelectedCulture] = useState<string>(getCultureId());
   const autoLogoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -51,24 +51,13 @@ const Layout: React.FC = () => {
       try {
         const client = createAuthenticatedApiClient();
         const menuGroups = await client.getApiUsersV1Menu();
+        const matches =appRoutes.find((route) => route.path === location.pathname);
+        const currentRoute = matches?.path;
+        const currentMenuItem = menuGroups.find((group) => group.items?.find((item) => '/' + item.path === currentRoute));
+
         
-        const currentPath = location.pathname;
-        let foundMenuItem: MenuItemDTO | null = null;
-        
-        for (const group of menuGroups) {
-          if (group.items) {
-            const item = group.items.find(
-              (item) => item.path === currentPath || '/' + item.path === currentPath
-            );
-            if (item) {
-              foundMenuItem = item;
-              break;
-            }
-          }
-        }
-        
-        if (foundMenuItem === null) {
-          toast.error(t('Security_AccessDenied',{path: currentPath}) );
+        if (currentMenuItem === null) {
+          toast.error(t('Security_AccessDenied', { path: currentMenuItem }));
           navigate('/dashboard');
         }
       } catch (error) {

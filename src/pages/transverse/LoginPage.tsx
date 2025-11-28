@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import {
   Box,
   Card,
@@ -20,11 +21,12 @@ import {
 import { toast } from 'react-toastify';
 import { createApiClient } from '../../api/client';
 import { setToken } from '../../utils/auth';
-import { setCulture, getCulture } from '../../utils/culture';
+import { setCulture, getCultureId } from '../../utils/culture';
 import { env } from '../../config/env';
 import { changeLanguage } from '../../i18n/config';
 import type { ListItemDTO, TokenRequestDTO } from '../../api/vito-transverse-identity-api';
 import { Login } from '@mui/icons-material';
+import { createFormSubmitHandler } from '../../utils/validations';
 
 interface LoginFormData {
   userName: string;
@@ -34,7 +36,7 @@ interface LoginFormData {
 }
 
 const LoginPage: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<ListItemDTO[]>([]);
@@ -45,14 +47,13 @@ const LoginPage: React.FC = () => {
     control,
     handleSubmit,
     formState: { errors },
-    setValue,
     watch,
   } = useForm<LoginFormData>({
     defaultValues: {
       userName: '',
       password: '',
       companyId: '',
-      cultureId: getCulture(),
+      cultureId: getCultureId(),
     },
     mode: 'onBlur',
     reValidateMode: 'onBlur',
@@ -135,6 +136,23 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleFormSubmit = createFormSubmitHandler(
+    handleSubmit,
+    onSubmit,
+    t,
+    {
+      getFieldLabel: (key: string, t: TFunction) => {
+        const fieldLabelMap: Record<string, string> = {
+          userName: t('Label_UserName'),
+          password: t('Label_Password'),
+          companyId: t('Label_Company'),
+          cultureId: t('Label_Language'),
+        };
+        return fieldLabelMap[key] || t('Label_' + key[0].toUpperCase() + key.slice(1));
+      },
+    }
+  );
+
   if (loadingData) {
     return (
       <Container maxWidth="sm" sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -163,36 +181,7 @@ const LoginPage: React.FC = () => {
             {t('Login_Subtitle')}
           </Typography>
 
-          <form
-            onSubmit={handleSubmit(onSubmit, (validationErrors) => {
-              // Show toast with validation errors summary
-              const errorMessages = Object.entries(validationErrors).map(([field, error]) => {
-                const fieldLabel = {
-                  userName: t('Label_UserName'),
-                  password: t('Label_Password'),
-                  companyId: t('Label_Company'),
-                  cultureId: t('Label_Language'),
-                }[field] || field;
-                return `${fieldLabel}: ${error?.message || t('Validation_Error')}`;
-              });
-
-              if (errorMessages.length > 0) {
-                toast.error(
-                  <div>
-                    <strong>{t('Validation_Required_Fields') || 'Validation Errors'}</strong>
-                    <ul style={{ margin: '8px 0 0 0', paddingLeft: '20px' }}>
-                      {errorMessages.map((msg, idx) => (
-                        <li key={idx}>{msg}</li>
-                      ))}
-                    </ul>
-                  </div>,
-                  {
-                    autoClose: 5000,
-                  }
-                );
-              }
-            })}
-          >
+          <form onSubmit={handleFormSubmit}>
             <Controller
               name="userName"
               control={control}

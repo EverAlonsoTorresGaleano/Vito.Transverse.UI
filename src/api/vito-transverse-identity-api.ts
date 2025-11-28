@@ -243,7 +243,7 @@ export interface IClient {
 
     postApiLocalizationsV1(cultureTranslationDTO: CultureTranslationDTO): Promise<CultureTranslationDTO>;
 
-    putApiLocalizationsV1(cultureTranslationDTO: CultureTranslationDTO): Promise<CultureTranslationDTO>;
+    putApiLocalizationsV1(cultureTranslationDTO: CultureTranslationDTO): Promise<boolean>;
 
     getApiLocalizationsV1ByCulture(cultureId: string): Promise<CultureTranslationDTO[]>;
 
@@ -5517,7 +5517,7 @@ export class Client implements IClient {
         return Promise.resolve<CultureTranslationDTO>(null as any);
     }
 
-    putApiLocalizationsV1(cultureTranslationDTO: CultureTranslationDTO): Promise<CultureTranslationDTO> {
+    putApiLocalizationsV1(cultureTranslationDTO: CultureTranslationDTO): Promise<boolean> {
         let url_ = this.baseUrl + "/api/Localizations/v1";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -5537,13 +5537,13 @@ export class Client implements IClient {
         });
     }
 
-    protected processPutApiLocalizationsV1(response: Response): Promise<CultureTranslationDTO> {
+    protected processPutApiLocalizationsV1(response: Response): Promise<boolean> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
-            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CultureTranslationDTO;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as boolean;
             return result200;
             });
         } else if (status === 400) {
@@ -5561,7 +5561,7 @@ export class Client implements IClient {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<CultureTranslationDTO>(null as any);
+        return Promise.resolve<boolean>(null as any);
     }
 
     getApiLocalizationsV1ByCulture(cultureId: string): Promise<CultureTranslationDTO[]> {
@@ -7273,7 +7273,7 @@ export interface CompanyDTO {
     nameTranslationValue: string;
     descriptionTranslationValue: string;
     countryNameTranslationKey?: string;
-    languageNameTranslationKey?: string;
+    defaultCultureNameTranslationKey?: string;
 }
 
 export interface CompanyMembershipsDTO {

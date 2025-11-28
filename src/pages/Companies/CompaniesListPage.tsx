@@ -33,6 +33,7 @@ import { env } from '../../config/env';
 import { useDataGridLocalization } from '../../utils/DataGridLocalization';
 import ConfirmDeletionDialog from '../../components/ConfirmDeletionDialog';
 import { toast } from 'react-toastify';
+import { getCultureName } from '../../utils/culture';
 
 const CompaniesListPage: React.FC = () => {
   const { t } = useTranslation();
@@ -58,8 +59,8 @@ const CompaniesListPage: React.FC = () => {
       const data = await client.getApiCompaniesV1All();
       setCompanies(data);
     } catch (error) {
-      console.error('Error loading companies:', error);
-      toast.error(t('Error_LoadingCompanies'));
+      console.error(t('Error_LoadingRecordList'), error);
+      toast.error(t('Error_LoadingRecordList'));
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,7 @@ const CompaniesListPage: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading menu data:', error);
-        toast.error(t('Error_LoadingMenu') || 'Error loading menu data');
+        toast.error(t('Error_LoadingMenu'));
         navigate('/dashboard');
       }
     };
@@ -110,11 +111,11 @@ const CompaniesListPage: React.FC = () => {
     try {
       const client = createAuthenticatedApiClient();
       await client.deleteApiCompaniesV1(company.id);
-      toast.success(t('Success_CompanyDeleted'));
+      toast.success(t('Success_RecordDeleted'));
       loadCompanies();
     } catch (error) {
-      console.error('Error deleting company:', error);
-      toast.error(t('Error_DeletingCompany'));
+      console.error(t('Error_DeletingRecord'), error);
+      toast.error(t('Error_DeletingRecord'));
     } finally {
       setDeleteDialogOpen(false);
       setSelectedCompany(null);
@@ -126,22 +127,16 @@ const CompaniesListPage: React.FC = () => {
     setDeleteDialogOpen(true);
   };
 
-  const handleView = (_company: CompanyDTO) => {
-    toast.info(t('Button_View_Tooltip'));
-    // Navigate to view page - adjust path as needed
-    //navigate(`/companies/${_company.id}/view`);
+  const handleView = (company: CompanyDTO) => {
+    navigate(`/companies/${company.id}/view`);
   };
 
-  const handleEdit = (_company: CompanyDTO) => {
-    toast.info(t('Button_Edit_Tooltip'));
-    // Navigate to edit page - adjust path as needed
-    //navigate(`/companies/${_company.id}/edit`);
+  const handleEdit = (company: CompanyDTO) => {
+    navigate(`/companies/${company.id}/edit`);
   };
 
   const handleNew = () => {
-    toast.info(t('Button_New_Tooltip'));
-    // Navigate to new company page - adjust path as needed
-    //navigate('/companies/new');
+    navigate('/companies/new');
   };
 
   const handleClearSearch = () => {
@@ -164,14 +159,14 @@ const CompaniesListPage: React.FC = () => {
   const columns: GridColDef<CompanyDTO>[] = [
     {
       field: 'id',
-      headerName: t('Label_Id') || 'Id',
+      headerName: t('Label_Id'),
       width: 100,
       sortable: true,
       resizable: true,
     },
     {
       field: 'nameTranslationKey',
-      headerName: t('Label_Name'),
+      headerName: t('Label_NameTranslationValue',{cultureName: getCultureName()}),
       flex: 1,
       minWidth: 150,
       sortable: true,
@@ -203,7 +198,7 @@ const CompaniesListPage: React.FC = () => {
     },
     {
       field: 'descriptionTranslationKey',
-      headerName: t('Label_Description'),
+      headerName: t('Label_DescriptionTranslationValue',{cultureName: getCultureName()}),
       flex: 1,
       minWidth: 200,
       sortable: true,

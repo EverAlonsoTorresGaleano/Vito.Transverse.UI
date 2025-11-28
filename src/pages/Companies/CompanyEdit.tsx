@@ -1,0 +1,445 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useForm, Controller } from 'react-hook-form';
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Grid,
+  Tooltip,
+  FormControlLabel,
+  Checkbox,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+} from '@mui/material';
+import {
+  ArrowBack as ArrowBackIcon,
+  Save as SaveIcon,
+} from '@mui/icons-material';
+import { createAuthenticatedApiClient } from '../../api/client';
+import type { CompanyDTO, ListItemDTO } from '../../api/vito-transverse-identity-api';
+import { toast } from 'react-toastify';
+import Loading from '../../components/Loading';
+import { getCultureName } from '../../utils/culture';
+import { createFormSubmitHandler } from '../../utils/validations';
+
+const CompanyEdit: React.FC = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [cultures, setCultures] = useState<ListItemDTO[]>([]);
+  const [countries, setCountries] = useState<ListItemDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [company, setCompany] = useState<CompanyDTO | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<CompanyDTO>({
+    defaultValues: {} as Partial<CompanyDTO>,
+  });
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!id) {
+        toast.error(t('Error_InvalidRecordId'));
+        navigate('/companies');
+        return;
+      }
+
+      setInitialLoading(true);
+      try {
+        const client = createAuthenticatedApiClient();
+        const [companyData, culturesData, countriesData] = await Promise.all([
+          client.getApiCompaniesV1(Number(id)),
+          client.getApiMasterV1CulturesActiveDropDown(),
+          client.getApiMasterV1CountriesDropdown(),
+        ]);
+        setCompany(companyData);
+        setCultures(culturesData);
+        setCountries(countriesData);
+        reset(companyData);
+      } catch (error) {
+        console.error(t('Error_LoadingRecord'), error);
+        toast.error(t('Error_LoadingRecord'));
+        navigate('/companies');
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadData();
+  }, [id, t, navigate, reset]);
+
+  const onSubmit = async (data: CompanyDTO) => {
+    setLoading(true);
+    try {
+      const client = createAuthenticatedApiClient();
+      await client.putApiCompaniesV1(data);
+      toast.success(t('Success_RecordUpdated'));
+      navigate('/companies');
+    } catch (error: any) {
+      console.error(t('Error_UpdatingRecord'), error);
+      
+      // Show error summary with toast
+      if (error?.response?.data) {
+        const errorData = error.response.data;
+        if (errorData.errors) {
+          const errorMessages = Object.entries(errorData.errors)
+            .map(([key, value]: [string, any]) => `${t('Label_' + key)}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            .join('\n');
+          toast.error(`${t('Error_UpdatingRecord')}\n${errorMessages}`);
+        } else {
+          toast.error(t('Error_UpdatingRecord'));
+        }
+      } else {
+        toast.error(t('Error_UpdatingRecord'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+  const handleFormSubmit = createFormSubmitHandler(handleSubmit, onSubmit, t);
+
+
+
+  const handleBack = () => {
+    navigate('/companies');
+  };
+
+  if (initialLoading) {
+    return <Loading />;
+  }
+
+  if (!company) {
+    return null;
+  }
+
+  return (
+    <Box>
+      {/* Title and Subtitle Container */}
+      <Box sx={{ mb: 3, mt: 3 }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{ color: '#1e3a5f', fontWeight: 600 }}
+        >
+          {t('CompanyEdit_Title')}
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#666666' }}>
+          {t('EditRecord_Subtitle')}
+        </Typography>
+      </Box>
+
+      {/* Action Buttons */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, justifyContent: 'flex-end' }}>
+        <Tooltip title={t('Button_Back_Tooltip')}>
+          <Button
+            variant="outlined"
+            onClick={handleBack}
+            startIcon={<ArrowBackIcon />}
+            sx={{
+              borderColor: '#1e3a5f',
+              color: '#1e3a5f',
+              '&:hover': {
+                borderColor: '#1e3a5f',
+                backgroundColor: 'rgba(30, 58, 95, 0.04)',
+              },
+            }}
+          >
+            {t('Button_Back')}
+          </Button>
+        </Tooltip>
+        <Tooltip title={t('Button_Save_Tooltip')}>
+          <Button
+            variant="contained"
+            onClick={handleFormSubmit}
+            startIcon={<SaveIcon />}
+            disabled={loading}
+            sx={{
+              backgroundColor: '#1e3a5f',
+              '&:hover': {
+                backgroundColor: '#152a47',
+              },
+            }}
+          >
+            {t('Button_Save')}
+          </Button>
+        </Tooltip>
+      </Box>
+
+      {/* Form Container */}
+      <Paper
+        elevation={2}
+        sx={{
+          borderRadius: 2,
+          p: 3,
+          backgroundColor: '#ffffff',
+        }}
+      >
+        <form onSubmit={handleFormSubmit}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label={t('Label_Id')}
+                value={company.id || ''}
+                disabled
+                {...register('id')}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label={t('Label_Subdomain')}
+                placeholder={t('Validation_Input_Placeholder', { field: t('Label_Subdomain') })}
+                error={!!errors.subdomain}
+                helperText={errors.subdomain?.message}
+                {...register('subdomain', {
+                  required: t('Validation_Input_Required'),
+                })}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#ffffff',
+                    '&:hover': {
+                      backgroundColor: '#ffffff',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: '#ffffff',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label={t('Label_Email')}
+                type="email"
+                placeholder={t('Validation_Input_Placeholder', { field: t('Label_Email') })}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                {...register('email', {
+                  required: t('Validation_Input_Required'),
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: t('Validation_Email_Invalid'),
+                  },
+                })}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#ffffff',
+                    '&:hover': {
+                      backgroundColor: '#ffffff',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: '#ffffff',
+                    },
+                  },
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth error={!!errors.defaultCultureFk}>
+                <InputLabel>{t('Label_DefaultCultureFk')}</InputLabel>
+                <Controller
+                  name="defaultCultureFk"
+                  control={control}
+                  rules={{ required: t('Validation_DropDown_Required') }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label={t('Label_DefaultCultureFk')}
+                      sx={{
+                        backgroundColor: '#ffffff',
+                        '&:hover': {
+                          backgroundColor: '#ffffff',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#ffffff',
+                        },
+                      }}
+                    >
+                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
+                      {cultures.map((culture) => (
+                        <MenuItem key={culture.id} value={culture.id}>
+                          {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.defaultCultureFk && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                    {errors.defaultCultureFk.message}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth error={!!errors.countryFk}>
+                <InputLabel>{t('Label_CountryFk')}</InputLabel>
+                <Controller
+                  name="countryFk"
+                  control={control}
+                  rules={{ required: t('Validation_DropDown_Required') }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label={t('Label_CountryFk')}
+                      sx={{
+                        backgroundColor: '#ffffff',
+                        '&:hover': {
+                          backgroundColor: '#ffffff',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#ffffff',
+                        },
+                      }}
+                    >
+                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
+                      {countries.map((country) => (
+                        <MenuItem key={country.id} value={country.id}>
+                          {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.countryFk && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                    {errors.countryFk.message}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Controller
+                name="nameTranslationValue"
+                control={control}
+                rules={{ required: t('Validation_Input_Required') }}
+                render={({ field }) => {
+                  // Translate the value for display
+                  const displayValue = field.value ? t(field.value) : '';
+                  return (
+                    <TextField
+                      fullWidth
+                      label={t('Label_NameTranslationValue',{cultureName: getCultureName()})}
+                      placeholder={t('Validation_Input_Placeholder', { field: t('Label_NameTranslationValue',{cultureName: getCultureName()}) })}
+                      error={!!errors.nameTranslationValue}
+                      helperText={errors.nameTranslationValue?.message}
+                      value={displayValue}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: '#ffffff',
+                          '&:hover': {
+                            backgroundColor: '#ffffff',
+                          },
+                          '&.Mui-focused': {
+                            backgroundColor: '#ffffff',
+                          },
+                        },
+                      }}
+                    />
+                  );
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Controller
+                name="descriptionTranslationValue"
+                control={control}
+                render={({ field }) => {
+                  // Translate the value for display (same as original behavior)
+                  const displayValue = field.value ? t(field.value) : '';
+                  return (
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      label={t('Label_DescriptionTranslationValue',{cultureName: getCultureName()})}
+                      placeholder={t('Validation_Input_Placeholder', { field: t('Label_DescriptionTranslationValue',{cultureName: getCultureName()}) })}
+                      error={!!errors.descriptionTranslationValue}
+                      helperText={errors.descriptionTranslationValue?.message}
+                      value={displayValue}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          backgroundColor: '#ffffff',
+                          '&:hover': {
+                            backgroundColor: '#ffffff',
+                          },
+                          '&.Mui-focused': {
+                            backgroundColor: '#ffffff',
+                          },
+                        },
+                      }}
+                    />
+                  );
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    {...register('isActive')}
+                    checked={company.isActive || false}
+                    sx={{
+                      color: '#1e3a5f',
+                      '&.Mui-checked': {
+                        color: '#1e3a5f',
+                      },
+                    }}
+                  />
+                }
+                label={t('Label_IsActive')}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    {...register('isSystemCompany')}
+                    sx={{
+                      color: '#1e3a5f',
+                      '&.Mui-checked': {
+                        color: '#1e3a5f',
+                      },
+                    }}
+                  />
+                }
+                label={t('Label_IsSystemCompany')}
+              />
+            </Grid>
+          </Grid>
+        </form>
+      </Paper>
+    </Box>
+  );
+};
+
+export default CompanyEdit;
+
