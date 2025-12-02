@@ -1,7 +1,7 @@
 # Projecto Vito.Transverse UI (ReactJS-TypeScript)
    . Preparado por Ever Alonso Torres Galeano -eeatg844@hotmail.com
 
-## Pasos para la ejecución del Proyecto Vito.Transverse API
+## Pasos para la ejecución del Proyecto Vito.Transverse UI
 
 ### Instalación de herramientas necesarias
 - 	. Instalar Node.js y npm
