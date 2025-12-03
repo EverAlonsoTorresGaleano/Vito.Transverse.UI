@@ -302,43 +302,9 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, onToggle }) => {
       <Divider />
       {!loading && (
         <List>
-          {/* Static Companies Menu Item */}
-          <ListItem disablePadding>
-            <ListItemButton
-              selected={location.pathname === '/companies'}
-              onClick={() => handleItemClick('/companies')}
-              onMouseEnter={(e) => handlePopoverOpen(e, t('Companies Remove this item for testing purpouse'))}
-              onMouseLeave={handlePopoverClose}
-              sx={{
-                minHeight: 48,
-                justifyContent: open ? 'initial' : 'center',
-                px: 2.5,
-                backgroundColor: location.pathname === '/companies' ? 'rgba(30, 58, 95, 0.08)' : 'transparent',
-                '&:hover': {
-                  backgroundColor: 'rgba(30, 58, 95, 0.12)',
-                },
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
-                  color: '#1e3a5f',
-                }}
-              >
-                <BusinessIcon />
-              </ListItemIcon>
-              {open && (
-                <ListItemText
-                  primary={t('Companies Remove this item for testing purpouse')}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              )}
-            </ListItemButton>
-          </ListItem>
+        
           {/* Dynamic Menu Items */}
-          <Divider />
+        
           {menuGroups.map((group) => (
             group.isVisible && <React.Fragment key={group.id}>
               <ListItem disablePadding>

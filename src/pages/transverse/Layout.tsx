@@ -11,6 +11,7 @@ import {
   MenuItem,
   FormControl,
   Tooltip,
+  Avatar,
 } from '@mui/material';
 import { Logout as LogoutIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
@@ -161,7 +162,16 @@ const Layout: React.FC = () => {
                 >
                   {cultures.map((culture) => (
                     <MenuItem key={culture.id} value={culture.id}>
-                      {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${culture.id}`}
+                                alt={culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                                {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                              </Typography>
+                            </Box>
                     </MenuItem>
                   ))}
                 </Select>

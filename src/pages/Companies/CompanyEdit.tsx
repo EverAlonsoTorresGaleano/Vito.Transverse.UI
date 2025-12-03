@@ -16,6 +16,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Avatar,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -280,7 +281,16 @@ const CompanyEdit: React.FC = () => {
                       <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
                       {cultures.map((culture) => (
                         <MenuItem key={culture.id} value={culture.id}>
-                          {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${culture.id}`}
+                                alt={culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                              {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                              </Typography>
+                            </Box>
                         </MenuItem>
                       ))}
                     </Select>
@@ -317,7 +327,17 @@ const CompanyEdit: React.FC = () => {
                       <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
                       {countries.map((country) => (
                         <MenuItem key={country.id} value={country.id}>
-                          {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${import.meta.env.VITE_API_BASE_URL}/api/Media/v1/Pictures/ByName/${country.id}.png`}
+                                alt={country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                              {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                              </Typography>
+                            </Box>
+                       
                         </MenuItem>
                       ))}
                     </Select>

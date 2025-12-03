@@ -17,6 +17,7 @@ import {
   CircularProgress,
   Container,
   Tooltip,
+  Avatar,
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { createApiClient } from '../../api/client';
@@ -248,7 +249,16 @@ const LoginPage: React.FC = () => {
                     </MenuItem>
                     {companies.map((company) => (
                       <MenuItem key={company.id} value={company.id}>
-                        {company.nameTranslationKey ? t(company.nameTranslationKey) : company.id}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${company.id}`}
+                                alt={company.nameTranslationKey ? t(company.nameTranslationKey) : company.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                                {company.nameTranslationKey ? t(company.nameTranslationKey) : company.id}
+                              </Typography>
+                            </Box>
                       </MenuItem>
                     ))}
                   </Select>
@@ -274,7 +284,16 @@ const LoginPage: React.FC = () => {
                   >
                     {cultures.map((culture) => (
                       <MenuItem key={culture.id} value={culture.id}>
-                        {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${culture.id}`}
+                                alt={culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                                {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                              </Typography>
+                            </Box>
                       </MenuItem>
                     ))}
                   </Select>

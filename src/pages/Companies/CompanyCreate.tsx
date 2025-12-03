@@ -16,6 +16,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Avatar,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -98,6 +99,10 @@ const CompanyCreate: React.FC = () => {
 
   const handleBack = () => {
     navigate('/companies');
+  };
+
+  const getSelectedCountry = (countryId: string | undefined) => {
+    return countries.find((c) => c.id === countryId);
   };
 
 
@@ -238,10 +243,21 @@ const CompanyCreate: React.FC = () => {
                         },
                       }}
                     >
+
+
                       <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
                       {cultures.map((culture) => (
                         <MenuItem key={culture.id} value={culture.id}>
-                          {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${culture.id}`}
+                                alt={culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                              {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
+                              </Typography>
+                            </Box>
                         </MenuItem>
                       ))}
                     </Select>
@@ -262,27 +278,53 @@ const CompanyCreate: React.FC = () => {
                   control={control}
                   rules={{ required: t('Validation_DropDown_Required') }}
                   render={({ field }) => (
-                    <Select
-                      {...field}
-                      label={t('Label_CountryFk')}
-                      sx={{
-                        backgroundColor: '#ffffff',
-                        '&:hover': {
+                      <Select
+                        {...field}
+                        label={t('Label_CountryFk')}
+                        renderValue={(value) => {
+                          if (!value) return t('DropDown_SelectOption');
+                          const country = getSelectedCountry(value);
+                          if (!country) return value;
+                          return (
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${import.meta.env.VITE_API_BASE_URL}/api/Media/v1/Pictures/ByName/${country.id}.png`}
+                                alt={country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                                {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                              </Typography>
+                            </Box>
+                          );
+                        }}
+                        sx={{
                           backgroundColor: '#ffffff',
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: '#ffffff',
-                        },
-                      }}
-                    >
-                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
-                      {countries.map((country) => (
-                        <MenuItem key={country.id} value={country.id}>
-                          {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
+                          '&:hover': {
+                            backgroundColor: '#ffffff',
+                          },
+                          '&.Mui-focused': {
+                            backgroundColor: '#ffffff',
+                          },
+                        }}
+                      >
+                        <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
+                        {countries.map((country) => (
+                          <MenuItem key={country.id} value={country.id}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Avatar
+                                src={`${import.meta.env.VITE_API_BASE_URL}/api/Media/v1/Pictures/ByName/${country.id}.png`}
+                                alt={country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                                sx={{ width: 24, height: 24 }}
+                              />
+                              <Typography>
+                                {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
+                              </Typography>
+                            </Box>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
                 />
                 {errors.countryFk && (
                   <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
