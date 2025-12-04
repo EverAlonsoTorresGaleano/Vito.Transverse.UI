@@ -23,21 +23,21 @@ import {
   Save as SaveIcon,
 } from '@mui/icons-material';
 import { createAuthenticatedApiClient } from '../../api/client';
-import type { CompanyDTO, ListItemDTO } from '../../api/vito-transverse-identity-api';
+import type { ApplicationDTO, ListItemDTO } from '../../api/vito-transverse-identity-api';
 import { toast } from 'react-toastify';
 import Loading from '../../components/Loading';
-import { getCultureName } from '../../utils/culture';
 import { createFormSubmitHandler } from '../../utils/validations';
+import { getCultureName } from '../../utils/culture';
 
-const CompanyEdit: React.FC = () => {
+const ApplicationEdit: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [cultures, setCultures] = useState<ListItemDTO[]>([]);
-  const [countries, setCountries] = useState<ListItemDTO[]>([]);
+  const [users, setUsers] = useState<ListItemDTO[]>([]);
+  const [licenseTypes, setLicenseTypes] = useState<ListItemDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [company, setCompany] = useState<CompanyDTO | null>(null);
+  const [application, setApplication] = useState<ApplicationDTO | null>(null);
 
   const {
     register,
@@ -45,34 +45,34 @@ const CompanyEdit: React.FC = () => {
     control,
     formState: { errors },
     reset,
-  } = useForm<CompanyDTO>({
-    defaultValues: {} as Partial<CompanyDTO>,
+  } = useForm<ApplicationDTO>({
+    defaultValues: {} as Partial<ApplicationDTO>,
   });
 
   useEffect(() => {
     const loadData = async () => {
       if (!id) {
         toast.error(t('Error_InvalidRecordId'));
-        navigate('/companies');
+        navigate('/applications');
         return;
       }
 
       setInitialLoading(true);
       try {
         const client = createAuthenticatedApiClient();
-        const [companyData, culturesData, countriesData] = await Promise.all([
-          client.getApiCompaniesV1(Number(id)),
-          client.getApiMasterV1CulturesActiveDropDown(),
-          client.getApiMasterV1CountriesDropdown(),
+        const [applicationData, usersData, licenseTypesData] = await Promise.all([
+          client.getApiApplicationsV1(Number(id)),
+          client.getApiCompaniesV1Dropdown(),
+          client.getApiApplicationsV1LicensetypesDropdown(),
         ]);
-        setCompany(companyData);
-        setCultures(culturesData);
-        setCountries(countriesData);
-        reset(companyData);
+        setApplication(applicationData);
+        setUsers(usersData);
+        setLicenseTypes(licenseTypesData);
+        reset(applicationData);
       } catch (error) {
         console.error(t('Error_LoadingRecord'), error);
         toast.error(t('Error_LoadingRecord'));
-        navigate('/companies');
+        navigate('/applications');
       } finally {
         setInitialLoading(false);
       }
@@ -81,13 +81,13 @@ const CompanyEdit: React.FC = () => {
     loadData();
   }, [id, t, navigate, reset]);
 
-  const onSubmit = async (data: CompanyDTO) => {
+  const onSubmit = async (data: ApplicationDTO) => {
     setLoading(true);
     try {
       const client = createAuthenticatedApiClient();
-      await client.putApiCompaniesV1(data);
+      await client.putApiApplicationsV1(data);
       toast.success(t('Success_RecordUpdated'));
-      navigate('/companies');
+      navigate('/applications');
     } catch (error: any) {
       console.error(t('Error_UpdatingRecord'), error);
       
@@ -110,20 +110,27 @@ const CompanyEdit: React.FC = () => {
     }
   };
 
-  
   const handleFormSubmit = createFormSubmitHandler(handleSubmit, onSubmit, t);
 
-
-
   const handleBack = () => {
-    navigate('/companies');
+    navigate('/applications');
+  };
+
+  const getSelectedUser = (userId: number | undefined) => {
+    if (!userId) return undefined;
+    return users.find((u) => u.id === userId.toString());
+  };
+
+  const getSelectedLicenseType = (licenseTypeId: number | undefined) => {
+    if (!licenseTypeId) return undefined;
+    return licenseTypes.find((lt) => lt.id === licenseTypeId.toString());
   };
 
   if (initialLoading) {
     return <Loading />;
   }
 
-  if (!company) {
+  if (!application) {
     return null;
   }
 
@@ -137,10 +144,10 @@ const CompanyEdit: React.FC = () => {
           gutterBottom
           sx={{ color: '#1e3a5f', fontWeight: 600 }}
         >
-          {t('CompanyEdit_Title')}
+          {t('ApplicationEdit_Title')}
         </Typography>
         <Typography variant="body1" sx={{ color: '#666666' }}>
-          {t('EditRecord_Subtitle')}
+          {t('ApplicationEdit_Subtitle')}
         </Typography>
       </Box>
 
@@ -196,7 +203,7 @@ const CompanyEdit: React.FC = () => {
               <TextField
                 fullWidth
                 label={t('Label_Id')}
-                value={company.id || ''}
+                value={application.id || ''}
                 disabled
                 {...register('id')}
                 sx={{
@@ -212,7 +219,6 @@ const CompanyEdit: React.FC = () => {
                 control={control}
                 rules={{ required: t('Validation_Input_Required') }}
                 render={({ field }) => {
-                  // Translate the value for display
                   const displayValue = field.value ? t(field.value) : '';
                   return (
                     <TextField
@@ -246,7 +252,6 @@ const CompanyEdit: React.FC = () => {
                 name="descriptionTranslationValue"
                 control={control}
                 render={({ field }) => {
-                  // Translate the value for display (same as original behavior)
                   const displayValue = field.value ? t(field.value) : '';
                   return (
                     <TextField
@@ -257,7 +262,7 @@ const CompanyEdit: React.FC = () => {
                       placeholder={t('Validation_Input_Placeholder', { field: t('Label_DescriptionTranslationValue',{cultureName: getCultureName()}) })}
                       error={!!errors.descriptionTranslationValue}
                       helperText={errors.descriptionTranslationValue?.message}
-                      value={displayValue}
+                      value={t(displayValue)}
                       onChange={(e) => {
                         field.onChange(e.target.value);
                       }}
@@ -278,157 +283,12 @@ const CompanyEdit: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label={t('Label_Subdomain')}
-                placeholder={t('Validation_Input_Placeholder', { field: t('Label_Subdomain') })}
-                error={!!errors.subdomain}
-                helperText={errors.subdomain?.message}
-                {...register('subdomain', {
-                  required: t('Validation_Input_Required'),
-                })}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#ffffff',
-                    '&:hover': {
-                      backgroundColor: '#ffffff',
-                    },
-                    '&.Mui-focused': {
-                      backgroundColor: '#ffffff',
-                    },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label={t('Label_Email')}
-                type="email"
-                placeholder={t('Validation_Input_Placeholder', { field: t('Label_Email') })}
-                error={!!errors.email}
-                helperText={errors.email?.message}
-                {...register('email', {
-                  required: t('Validation_Input_Required'),
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: t('Validation_Email_Invalid'),
-                  },
-                })}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#ffffff',
-                    '&:hover': {
-                      backgroundColor: '#ffffff',
-                    },
-                    '&.Mui-focused': {
-                      backgroundColor: '#ffffff',
-                    },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth error={!!errors.defaultCultureFk}>
-                <InputLabel>{t('Label_DefaultCultureFk')}</InputLabel>
-                <Controller
-                  name="defaultCultureFk"
-                  control={control}
-                  rules={{ required: t('Validation_DropDown_Required') }}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label={t('Label_DefaultCultureFk')}
-                      sx={{
-                        backgroundColor: '#ffffff',
-                        '&:hover': {
-                          backgroundColor: '#ffffff',
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: '#ffffff',
-                        },
-                      }}
-                    >
-                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
-                      {cultures.map((culture) => (
-                        <MenuItem key={culture.id} value={culture.id}>
-                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Avatar
-                                src={`${culture.id}`}
-                                alt={culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
-                                sx={{ width: 24, height: 24 }}
-                              />
-                              <Typography>
-                              {culture.nameTranslationKey ? t(culture.nameTranslationKey) : culture.id}
-                              </Typography>
-                            </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-                {errors.defaultCultureFk && (
-                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                    {errors.defaultCultureFk.message}
-                  </Typography>
-                )}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth error={!!errors.countryFk}>
-                <InputLabel>{t('Label_CountryFk')}</InputLabel>
-                <Controller
-                  name="countryFk"
-                  control={control}
-                  rules={{ required: t('Validation_DropDown_Required') }}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label={t('Label_CountryFk')}
-                      sx={{
-                        backgroundColor: '#ffffff',
-                        '&:hover': {
-                          backgroundColor: '#ffffff',
-                        },
-                        '&.Mui-focused': {
-                          backgroundColor: '#ffffff',
-                        },
-                      }}
-                    >
-                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
-                      {countries.map((country) => (
-                        <MenuItem key={country.id} value={country.id}>
-                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Avatar
-                                src={`${import.meta.env.VITE_API_BASE_URL}/api/Media/v1/Pictures/ByName/${country.id}.png`}
-                                alt={country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
-                                sx={{ width: 24, height: 24 }}
-                              />
-                              <Typography>
-                              {country.nameTranslationKey ? t(country.nameTranslationKey) : country.id}
-                              </Typography>
-                            </Box>
-                       
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-                {errors.countryFk && (
-                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
-                    {errors.countryFk.message}
-                  </Typography>
-                )}
-              </FormControl>
-            </Grid>
-  
-            <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label={t('Label_CompanyClient')}
-              value={company.companyClient || ''}
+              label={t('Label_ApplicationClient')}
+              value={application.applicationClient || ''}
               disabled
-              {...register('companyClient')}
+              {...register('applicationClient')}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: '#f5f5f5',
@@ -439,10 +299,10 @@ const CompanyEdit: React.FC = () => {
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label={t('Label_CompanySecret')}
-              value={company.companySecret || ''}
+              label={t('Label_ApplicationSecret')}
+              value={application.applicationSecret || ''}
               disabled
-              {...register('companySecret')}
+              {...register('applicationSecret')}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: '#f5f5f5',
@@ -451,11 +311,141 @@ const CompanyEdit: React.FC = () => {
             />
           </Grid>
             <Grid item xs={12} md={6}>
+              <FormControl fullWidth error={!!errors.ownerFk}>
+                <InputLabel>{t('Label_OwnerFk')}</InputLabel>
+                <Controller
+                  name="ownerFk"
+                  control={control}
+                  rules={{ required: t('Validation_DropDown_Required') }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label={t('Label_OwnerFk')}
+                      value={field.value ? field.value.toString() : ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      renderValue={(value) => {
+                        if (!value) return t('DropDown_SelectOption');
+                        const user = getSelectedUser(Number(value));
+                        if (!user) return value;
+                        return (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Avatar
+                              src={user.id}
+                              alt={user.nameTranslationKey ? t(user.nameTranslationKey) : user.id}
+                              sx={{ width: 24, height: 24 }}
+                            />
+                            <Typography>
+                              {user.nameTranslationKey ? t(user.nameTranslationKey) : user.id}
+                            </Typography>
+                          </Box>
+                        );
+                      }}
+                      sx={{
+                        backgroundColor: '#ffffff',
+                        '&:hover': {
+                          backgroundColor: '#ffffff',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#ffffff',
+                        },
+                      }}
+                    >
+                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
+                      {users.map((user) => (
+                        <MenuItem key={user.id} value={user.id}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Avatar
+                              src={user.id}
+                              alt={user.nameTranslationKey ? t(user.nameTranslationKey) : user.id}
+                              sx={{ width: 24, height: 24 }}
+                            />
+                            <Typography>
+                              {user.nameTranslationKey ? t(user.nameTranslationKey) : user.id}
+                            </Typography>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.ownerFk && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                    {errors.ownerFk.message}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth error={!!errors.applicationLicenseTypeFk}>
+                <InputLabel>{t('Label_ApplicationLicenseTypeFk')}</InputLabel>
+                <Controller
+                  name="applicationLicenseTypeFk"
+                  control={control}
+                  rules={{ required: t('Validation_DropDown_Required') }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label={t('Label_ApplicationLicenseTypeFk')}
+                      value={field.value ? field.value.toString() : ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                      renderValue={(value) => {
+                        if (!value) return t('DropDown_SelectOption');
+                        const licenseType = getSelectedLicenseType(Number(value));
+                        if (!licenseType) return value;
+                        return (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Avatar
+                              src={licenseType.id}
+                              alt={licenseType.nameTranslationKey ? t(licenseType.nameTranslationKey) : licenseType.id}
+                              sx={{ width: 24, height: 24 }}
+                            />
+                            <Typography>
+                              {licenseType.nameTranslationKey ? t(licenseType.nameTranslationKey) : licenseType.id}
+                            </Typography>
+                          </Box>
+                        );
+                      }}
+                      sx={{
+                        backgroundColor: '#ffffff',
+                        '&:hover': {
+                          backgroundColor: '#ffffff',
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#ffffff',
+                        },
+                      }}
+                    >
+                      <MenuItem value="">{t('DropDown_SelectOption')}</MenuItem>
+                      {licenseTypes.map((licenseType) => (
+                        <MenuItem key={licenseType.id} value={licenseType.id}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Avatar
+                              src={licenseType.id}
+                              alt={licenseType.nameTranslationKey ? t(licenseType.nameTranslationKey) : licenseType.id}
+                              sx={{ width: 24, height: 24 }}
+                            />
+                            <Typography>
+                              {licenseType.nameTranslationKey ? t(licenseType.nameTranslationKey) : licenseType.id}
+                            </Typography>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+                {errors.applicationLicenseTypeFk && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>
+                    {errors.applicationLicenseTypeFk.message}
+                  </Typography>
+                )}
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <FormControlLabel
                 control={
                   <Checkbox
                     {...register('isActive')}
-                    checked={company.isActive || false}
+                    checked={application.isActive || false}
                     sx={{
                       color: '#1e3a5f',
                       '&.Mui-checked': {
@@ -467,22 +457,6 @@ const CompanyEdit: React.FC = () => {
                 label={t('Label_IsActive')}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    {...register('isSystemCompany')}
-                    sx={{
-                      color: '#1e3a5f',
-                      '&.Mui-checked': {
-                        color: '#1e3a5f',
-                      },
-                    }}
-                  />
-                }
-                label={t('Label_IsSystemCompany')}
-              />
-            </Grid>
           </Grid>
         </form>
       </Paper>
@@ -490,5 +464,5 @@ const CompanyEdit: React.FC = () => {
   );
 };
 
-export default CompanyEdit;
+export default ApplicationEdit;
 

@@ -61,11 +61,13 @@ export interface IClient {
 
     getApiApplicationsV1All(): Promise<ApplicationDTO[]>;
 
-    postApiApplicationsV1(companyId: number, userId: number, applicationDTO: ApplicationDTO): Promise<ApplicationDTO>;
+    postApiApplicationsV1(applicationDTO: ApplicationDTO): Promise<ApplicationDTO>;
 
     putApiApplicationsV1(applicationDTO: ApplicationDTO): Promise<ApplicationDTO>;
 
     getApiApplicationsV1Dropdown(): Promise<ListItemDTO[]>;
+
+    getApiApplicationsV1DropdownWithGuid(): Promise<ListItemDTO[]>;
 
     getApiApplicationsV1(applicationId: number): Promise<ApplicationDTO>;
 
@@ -113,6 +115,8 @@ export interface IClient {
 
     putApiApplicationsV1Endpoints(endpointInfo: EndpointDTO): Promise<EndpointDTO>;
 
+    getApiApplicationsV1LicensetypesDropdown(): Promise<ListItemDTO[]>;
+
     getApiCompaniesV1All(): Promise<CompanyDTO[]>;
 
     postApiCompaniesV1(companyApplications: CompanyDTO): Promise<CompanyDTO>;
@@ -120,6 +124,8 @@ export interface IClient {
     putApiCompaniesV1(companyInfo: CompanyDTO): Promise<CompanyDTO>;
 
     getApiCompaniesV1Dropdown(): Promise<ListItemDTO[]>;
+
+    getApiCompaniesV1DropdownWithGuid(): Promise<ListItemDTO[]>;
 
     getApiCompaniesV1(companyId: number): Promise<CompanyDTO>;
 
@@ -1462,16 +1468,8 @@ export class Client implements IClient {
         return Promise.resolve<ApplicationDTO[]>(null as any);
     }
 
-    postApiApplicationsV1(companyId: number, userId: number, applicationDTO: ApplicationDTO): Promise<ApplicationDTO> {
-        let url_ = this.baseUrl + "/api/applications/v1?";
-        if (companyId === undefined || companyId === null)
-            throw new globalThis.Error("The parameter 'companyId' must be defined and cannot be null.");
-        else
-            url_ += "companyId=" + encodeURIComponent("" + companyId) + "&";
-        if (userId === undefined || userId === null)
-            throw new globalThis.Error("The parameter 'userId' must be defined and cannot be null.");
-        else
-            url_ += "userId=" + encodeURIComponent("" + userId) + "&";
+    postApiApplicationsV1(applicationDTO: ApplicationDTO): Promise<ApplicationDTO> {
+        let url_ = this.baseUrl + "/api/applications/v1";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(applicationDTO);
@@ -1581,6 +1579,49 @@ export class Client implements IClient {
     }
 
     protected processGetApiApplicationsV1Dropdown(response: Response): Promise<ListItemDTO[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ListItemDTO[];
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as HttpValidationProblemDetails;
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            return throwException("A server side error occurred.", status, _responseText, _headers);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ListItemDTO[]>(null as any);
+    }
+
+    getApiApplicationsV1DropdownWithGuid(): Promise<ListItemDTO[]> {
+        let url_ = this.baseUrl + "/api/applications/v1/dropdownWithGuid";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetApiApplicationsV1DropdownWithGuid(_response);
+        });
+    }
+
+    protected processGetApiApplicationsV1DropdownWithGuid(response: Response): Promise<ListItemDTO[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -2656,6 +2697,49 @@ export class Client implements IClient {
         return Promise.resolve<EndpointDTO>(null as any);
     }
 
+    getApiApplicationsV1LicensetypesDropdown(): Promise<ListItemDTO[]> {
+        let url_ = this.baseUrl + "/api/applications/v1/licensetypes/dropdown";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetApiApplicationsV1LicensetypesDropdown(_response);
+        });
+    }
+
+    protected processGetApiApplicationsV1LicensetypesDropdown(response: Response): Promise<ListItemDTO[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ListItemDTO[];
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as HttpValidationProblemDetails;
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            return throwException("A server side error occurred.", status, _responseText, _headers);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ListItemDTO[]>(null as any);
+    }
+
     getApiCompaniesV1All(): Promise<CompanyDTO[]> {
         let url_ = this.baseUrl + "/api/Companies/v1";
         url_ = url_.replace(/[?&]$/, "");
@@ -2810,6 +2894,49 @@ export class Client implements IClient {
     }
 
     protected processGetApiCompaniesV1Dropdown(response: Response): Promise<ListItemDTO[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ListItemDTO[];
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            result400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as HttpValidationProblemDetails;
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            return throwException("A server side error occurred.", status, _responseText, _headers);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<ListItemDTO[]>(null as any);
+    }
+
+    getApiCompaniesV1DropdownWithGuid(): Promise<ListItemDTO[]> {
+        let url_ = this.baseUrl + "/api/Companies/v1/dropdownWithGuid";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetApiCompaniesV1DropdownWithGuid(_response);
+        });
+    }
+
+    protected processGetApiCompaniesV1DropdownWithGuid(response: Response): Promise<ListItemDTO[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -7248,9 +7375,9 @@ export interface ApplicationDTO {
     lastUpdateByUserFk?: number | undefined;
     nameTranslationValue: string;
     descriptionTranslationValue: string;
-    applicationOwnerId?: number | undefined;
     applicationOwnerNameTranslationKey?: string;
     applicationOwnerDescriptionTranslationKey?: string;
+    applicationLicenseTypeNameTranslationKey?: string;
 }
 
 export interface CompanyDTO {

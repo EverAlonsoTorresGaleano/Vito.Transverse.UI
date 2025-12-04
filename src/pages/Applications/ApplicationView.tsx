@@ -21,55 +21,55 @@ import {
   ContentCopy as ContentCopyIcon,
 } from '@mui/icons-material';
 import { createAuthenticatedApiClient } from '../../api/client';
-import type { CompanyDTO } from '../../api/vito-transverse-identity-api';
+import type { ApplicationDTO } from '../../api/vito-transverse-identity-api';
 import { toast } from 'react-toastify';
 import Loading from '../../components/Loading';
 import { getCultureName } from '../../utils/culture';
 
-const CompanyView: React.FC = () => {
+const ApplicationView: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
-  const [company, setCompany] = useState<CompanyDTO | null>(null);
+  const [application, setApplication] = useState<ApplicationDTO | null>(null);
 
-  const { register } = useForm<CompanyDTO>({
-    defaultValues: {} as CompanyDTO,
+  const { register } = useForm<ApplicationDTO>({
+    defaultValues: {} as ApplicationDTO,
   });
 
   useEffect(() => {
-    const loadCompany = async () => {
+    const loadApplication = async () => {
       if (!id) {
         toast.error(t('Error_InvalidRecordId'));
-        navigate('/companies');
+        navigate('/applications');
         return;
       }
 
       setLoading(true);
       try {
         const client = createAuthenticatedApiClient();
-        const data = await client.getApiCompaniesV1(Number(id));
-        setCompany(data);
+        const data = await client.getApiApplicationsV1(Number(id));
+        setApplication(data);
       } catch (error) {
         console.error(t('Error_LoadingRecord'), error);
         toast.error(t('Error_LoadingRecord'));
-        navigate('/companies');
+        navigate('/applications');
       } finally {
         setLoading(false);
       }
     };
 
-    loadCompany();
+    loadApplication();
   }, [id, t, navigate]);
 
   const handleEdit = () => {
     if (id) {
-      navigate(`/companies/${id}/edit`);
+      navigate(`/applications/${id}/edit`);
     }
   };
 
   const handleBack = () => {
-    navigate('/companies');
+    navigate('/applications');
   };
 
   const handleCopy = async (text: string) => {
@@ -86,7 +86,7 @@ const CompanyView: React.FC = () => {
     return <Loading />;
   }
 
-  if (!company) {
+  if (!application) {
     return null;
   }
 
@@ -100,10 +100,10 @@ const CompanyView: React.FC = () => {
           gutterBottom
           sx={{ color: '#1e3a5f', fontWeight: 600 }}
         >
-          {t('CompanyView_Title')}
+          {t('ApplicationView_Title')}
         </Typography>
         <Typography variant="body1" sx={{ color: '#666666' }}>
-          {t('ViewRecord_Subtitle')}
+          {t('ApplicationView_Subtitle')}
         </Typography>
       </Box>
 
@@ -157,7 +157,7 @@ const CompanyView: React.FC = () => {
             <TextField
               fullWidth
               label={t('Label_Id')}
-              value={company.id || ''}
+              value={application.id || ''}
               disabled
               {...register('id')}
               sx={{
@@ -170,8 +170,8 @@ const CompanyView: React.FC = () => {
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label={t('Label_NameTranslationValue', {cultureName: getCultureName()})}
-              value={company.nameTranslationValue ? t(company.nameTranslationValue, {cultureName: getCultureName()}) : ''}
+              label={t('Label_NameTranslationValue',{cultureName: getCultureName()})}
+              value={application.nameTranslationValue ? t(application.nameTranslationValue) : ''}
               disabled
               {...register('nameTranslationValue')}
               sx={{
@@ -186,8 +186,8 @@ const CompanyView: React.FC = () => {
               fullWidth
               multiline
               rows={4}
-              label={t('Label_DescriptionTranslationValue', {cultureName: getCultureName()})}
-              value={company.descriptionTranslationValue ? t(company.descriptionTranslationValue, {cultureName: getCultureName()}) : ''}
+              label={t('Label_DescriptionTranslationValue',{cultureName: getCultureName()})}
+              value={application.descriptionTranslationValue ? t(application.descriptionTranslationValue) : ''}
               disabled
               {...register('descriptionTranslationValue')}
               sx={{
@@ -200,73 +200,16 @@ const CompanyView: React.FC = () => {
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label={t('Label_Subdomain')}
-              value={company.subdomain || ''}
+              label={t('Label_ApplicationClient')}
+              value={application.applicationClient || ''}
               disabled
-              {...register('subdomain')}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={t('Label_Email')}
-              value={company.email || ''}
-              disabled
-              {...register('email')}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={t('Label_DefaultCultureFk')}
-              value={company.defaultCultureNameTranslationKey ? t(company.defaultCultureNameTranslationKey) : ''}
-              disabled
-              {...register('defaultCultureFk')}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={t('Label_CountryFk')}
-              value={company.countryNameTranslationKey ? t(company.countryNameTranslationKey) : ''}
-              disabled
-              {...register('countryFk')}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#f5f5f5',
-                },
-              }}
-            />
-          </Grid>
-      
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              label={t('Label_CompanyClient')}
-              value={company.companyClient || ''}
-              disabled
-              {...register('companyClient')}
+              {...register('applicationClient')}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <Tooltip title={t('Button_Copy_Tooltip') || 'Copy'}>
                       <IconButton
-                        onClick={() => handleCopy(company.companyClient || '')}
+                        onClick={() => handleCopy(application.applicationClient || '')}
                         edge="end"
                         size="small"
                         sx={{ color: '#1e3a5f' }}
@@ -287,16 +230,16 @@ const CompanyView: React.FC = () => {
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
-              label={t('Label_CompanySecret')}
-              value={company.companySecret || ''}
+              label={t('Label_ApplicationSecret')}
+              value={application.applicationSecret || ''}
               disabled
-              {...register('companySecret')}
+              {...register('applicationSecret')}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
                     <Tooltip title={t('Button_Copy_Tooltip') || 'Copy'}>
                       <IconButton
-                        onClick={() => handleCopy(company.companySecret || '')}
+                        onClick={() => handleCopy(application.applicationSecret || '')}
                         edge="end"
                         size="small"
                         sx={{ color: '#1e3a5f' }}
@@ -307,6 +250,34 @@ const CompanyView: React.FC = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label={t('Label_OwnerFk')}
+              value={application.applicationOwnerNameTranslationKey ? t(application.applicationOwnerNameTranslationKey) : ''}
+              disabled
+              {...register('ownerFk')}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: '#f5f5f5',
+                },
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label={t('Label_ApplicationLicenseTypeFk')}
+              value={application.applicationLicenseTypeNameTranslationKey ? t(application.applicationLicenseTypeNameTranslationKey) : ''}
+              disabled
+              {...register('applicationLicenseTypeFk')}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: '#f5f5f5',
@@ -318,24 +289,12 @@ const CompanyView: React.FC = () => {
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={company.isActive || false}
+                  checked={application.isActive || false}
                   disabled
                   {...register('isActive')}
                 />
               }
               label={t('Label_IsActive')}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={company.isSystemCompany || false}
-                  disabled
-                  {...register('isSystemCompany')}
-                />
-              }
-              label={t('Label_IsSystemCompany')}
             />
           </Grid>
         </Grid>
@@ -344,5 +303,5 @@ const CompanyView: React.FC = () => {
   );
 };
 
-export default CompanyView;
+export default ApplicationView;
 

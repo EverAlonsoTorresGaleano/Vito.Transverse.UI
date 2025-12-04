@@ -67,7 +67,7 @@ const LoginPage: React.FC = () => {
       try {
         const client = createApiClient();
         const [companiesData, culturesData] = await Promise.all([
-          client.getApiCompaniesV1Dropdown(),
+          client.getApiCompaniesV1DropdownWithGuid(),
           client.getApiMasterV1CulturesActiveDropDown(),
         ]);
 
