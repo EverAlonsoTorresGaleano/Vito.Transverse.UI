@@ -3,7 +3,6 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { env } from '../config/env';
 import { getCultureId } from '../utils/culture';
-import { createApiClient } from '../api/client';
 import type { CultureTranslationDTO } from '../api/vito-transverse-identity-api';
 
 const loadTranslations = async (cultureId: string): Promise<Record<string, string>> => {
